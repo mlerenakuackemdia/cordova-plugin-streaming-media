@@ -77,7 +77,7 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 
 		// Create progress throbber
 		mProgressBar = new ProgressBar(this);
-		mProgressBar.setIndeterminate(true);
+		mProgressBar.setIndeterminate(false);
 		// Center the progress bar
 		RelativeLayout.LayoutParams pblp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		pblp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
