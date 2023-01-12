@@ -56,11 +56,11 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 
 		// START EDIT
 		close = new TextView(this);
-		close.setText("Close");
+		close.setText("X");
 		close.setBackgroundColor(Color.BLACK);
 		close.getBackground().setAlpha(128);
 		close.setTextColor(Color.WHITE);
-		close.setTextSize(18);
+		close.setTextSize(24);
 		close.setPadding(10, 10, 10, 10);
 		RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
