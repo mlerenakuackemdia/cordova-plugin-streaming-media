@@ -1,6 +1,8 @@
 package com.hutchind.cordova.plugins.streamingmedia;
 
 import android.app.Activity;
+import android.app.PictureInPictureParams;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -10,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.view.MotionEvent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -31,6 +34,7 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 	private MediaController mMediaController = null;
 	private ProgressBar mProgressBar = null;
 	private TextView close = null;
+	private TextView pipButton;
 	private String mVideoUrl;
 	private Boolean mShouldAutoClose = true;
 	private boolean mControls;
@@ -55,24 +59,53 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 		relLayout.addView(mVideoView);
 
 		// START EDIT
-		close = new TextView(this);
-		close.setText("X");
-		close.setBackgroundColor(Color.BLACK);
-		close.getBackground().setAlpha(128);
-		close.setTextColor(Color.WHITE);
-		close.setTextSize(24);
-		close.setPadding(10, 100, 100, 10);
-		RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-		closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-		close.setLayoutParams(closeLayoutParams);
-		close.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				wrapItUp(RESULT_OK, null);
-			}
-		});
-		relLayout.addView(close);
-		close.bringToFront();
+		// Add Picture-in-Picture button
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && mControls) {
+			pipButton = new TextView(this);
+			pipButton.setText("⧉");
+			pipButton.setBackgroundColor(Color.BLACK);
+			pipButton.getBackground().setAlpha(128);
+			pipButton.setTextColor(Color.WHITE);
+			pipButton.setTextSize(18);
+			pipButton.setPadding(10, 10, 10, 10);
+			RelativeLayout.LayoutParams pipParams = new RelativeLayout.LayoutParams(
+					RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+			pipParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+			pipParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+			pipParams.setMargins(200, 0, 0, 0);
+			pipButton.setLayoutParams(pipParams);
+			pipButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					PictureInPictureParams params = new PictureInPictureParams.Builder().build();
+					enterPictureInPictureMode(params);
+				}
+			});
+			relLayout.addView(pipButton);
+			pipButton.bringToFront();
+
+
+			close = new TextView(this);
+			close.setText("✕");
+			close.setBackgroundColor(Color.BLACK);
+			close.getBackground().setAlpha(128);
+			close.setTextColor(Color.WHITE);
+			close.setTextSize(24);
+			close.setPadding(10, 10, 10, 10);
+			RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+			closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+			closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+			close.setLayoutParams(closeLayoutParams);
+			close.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					wrapItUp(RESULT_OK, null);
+				}
+			});
+			relLayout.addView(close);
+			close.bringToFront();
+
+
+		}
 		// END EDIT
 
 		// Create progress throbber
@@ -101,7 +134,7 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 			mVideoView.setOnPreparedListener(this);
 			mVideoView.setOnErrorListener(this);
 			mVideoView.setVideoURI(videoUri);
-			mMediaController = new MediaController(this);
+			mMediaController = new PiPMediaController(this, pipButton, close);
 			mMediaController.setAnchorView(mVideoView);
 			mMediaController.setMediaPlayer(mVideoView);
 			if (!mControls) {
@@ -226,5 +259,27 @@ MediaPlayer.OnErrorListener, MediaPlayer.OnBufferingUpdateListener {
 		if (mMediaController != null)
 			mMediaController.show();
 		return false;
+	}
+
+	private class PiPMediaController extends MediaController {
+		private View pip;
+		private View closeBtn;
+		public PiPMediaController(Context ctx, View pipButton, View closeButton) {
+			super(ctx);
+			this.pip = pipButton;
+			this.closeBtn = closeButton;
+		}
+		@Override
+		public void show() {
+			super.show();
+			pip.setVisibility(View.VISIBLE);
+			closeBtn.setVisibility(View.VISIBLE);
+		}
+		@Override
+		public void hide() {
+			super.hide();
+			pip.setVisibility(View.GONE);
+			closeBtn.setVisibility(View.GONE);
+		}
 	}
 }
